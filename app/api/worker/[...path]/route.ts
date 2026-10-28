@@ -2,9 +2,10 @@ import { NextResponse, type NextRequest } from "next/server"
 import { getAuthedUser } from "@/lib/google-token"
 
 /**
- * Proxy autenticado hacia el worker. Solo deja pasar las rutas conocidas,
- * agrega la API key del servicio y la identidad del usuario, y para crear
- * un proceso inyecta el access token de Google (que nunca llega al navegador).
+ * Proxy autenticado hacia el worker. Solo deja pasar las rutas conocidas y
+ * agrega dos cosas: la API key del servicio y el access token de Google del
+ * usuario, que nunca llega al navegador. El worker verifica ese token contra
+ * Google para saber de quién es la petición, en vez de fiarse de una cabecera.
  */
 
 const ROUTES: { method: string; pattern: RegExp }[] = [
@@ -38,17 +39,14 @@ async function handle(req: NextRequest, ctx: Ctx) {
     return NextResponse.json({ error: "Falta configurar WORKER_URL y WORKER_API_KEY en el servidor." }, { status: 500 })
   }
 
+  const token = await user.accessToken()
+  if (!token) {
+    return NextResponse.json({ error: "Google no renovó el permiso de Gmail. Cierra sesión y vuelve a ingresar.", code: "google_auth" }, { status: 401 })
+  }
+
   let body: string | undefined
   if (req.method === "POST") {
-    const json = await req.json().catch(() => ({}))
-    if (route === "jobs") {
-      const token = await user.accessToken()
-      if (!token) {
-        return NextResponse.json({ error: "Google no renovó el permiso de Gmail. Cierra sesión y vuelve a ingresar.", code: "google_auth" }, { status: 401 })
-      }
-      json.googleAccessToken = token
-    }
-    body = JSON.stringify(json)
+    body = JSON.stringify(await req.json().catch(() => ({})))
   }
 
   let upstream: Response
@@ -58,7 +56,7 @@ async function handle(req: NextRequest, ctx: Ctx) {
       headers: {
         "content-type": "application/json",
         "x-api-key": apiKey,
-        "x-user-email": user.email,
+        "x-google-token": token,
       },
       body,
       signal: req.signal,
