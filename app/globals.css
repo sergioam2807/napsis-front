@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+/* Tokens: ver ../DESIGN.md */
+@theme {
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+
+  --color-ground: oklch(0.975 0.005 250);
+  --color-surface: oklch(1 0 0);
+  --color-panel: oklch(0.955 0.007 250);
+  --color-line: oklch(0.9 0.008 250);
+  --color-line-strong: oklch(0.82 0.01 250);
+  --color-ink: oklch(0.23 0.02 255);
+  --color-ink-2: oklch(0.43 0.02 255);
+  --color-ink-3: oklch(0.52 0.015 255);
+
+  --color-accent: oklch(0.46 0.09 165);
+  --color-accent-strong: oklch(0.39 0.085 165);
+  --color-accent-soft: oklch(0.95 0.03 165);
+  --color-accent-line: oklch(0.83 0.06 165);
+
+  --color-warn: oklch(0.5 0.11 70);
+  --color-warn-soft: oklch(0.965 0.045 85);
+  --color-warn-line: oklch(0.86 0.08 80);
+
+  --color-danger: oklch(0.52 0.17 25);
+  --color-danger-soft: oklch(0.965 0.025 25);
+  --color-danger-line: oklch(0.86 0.06 25);
+
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+
+  --shadow-float: 0 1px 2px oklch(0.23 0.02 255 / 0.06), 0 8px 24px -6px oklch(0.23 0.02 255 / 0.14);
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: oklch(0.86 0.07 165);
+    color: var(--color-ink);
+  }
+
+  input,
+  textarea {
+    caret-color: var(--color-accent);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-ink-3);
+    opacity: 1;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  a {
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Barra de progreso indeterminada / shimmer de carga */
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+@utility skeleton {
+  background: linear-gradient(90deg, var(--color-panel) 25%, oklch(0.975 0.004 250) 50%, var(--color-panel) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
